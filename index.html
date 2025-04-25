@@ -1,10 +1,187 @@
-<html>
-    <head>
-      <title>my first webpage</title>
-    </head>
-    <body>
-        <h1>node js</h1>
-        <h2>section A</h2>
-        <p>section C changed to section A</p>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financial Management System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="font-sans bg-gray-100 text-gray-800">
+
+  <!-- Landing Page -->
+  <section id="landingPage" class="h-screen flex flex-col justify-center items-center bg-gradient-to-br from-green-400 to-blue-500 text-white">
+    <h1 class="text-5xl font-extrabold mb-4 text-center">Financial Management System</h1>
+    <p class="mb-6 text-lg">Manage your income, expenses, and savings smartly.</p>
+    <button onclick="showPersonalInfo()" class="bg-white text-blue-600 font-semibold px-6 py-2 rounded shadow-md hover:bg-gray-100 transition">Get Started</button>
+  </section>
+
+  <!-- Personal Info Page -->
+  <section id="personalInfo" class="hidden max-w-xl mx-auto p-8 bg-white rounded shadow mt-10">
+    <h2 class="text-2xl font-bold text-blue-600 mb-4">Personal Info</h2>
+    <form onsubmit="showDashboard(event)">
+      <label for="name">Name:</label>
+      <input type="text" id="name" placeholder="Name" class="w-full mb-3 border p-2 rounded" required />
+      <label for="email">Email:</label>
+      <input type="email" id="email" placeholder="Email address" class="w-full mb-3 border p-2 rounded" required />
+      <label for="phone">Phone:</label>
+      <input type="tel" id="phone" placeholder="Phone Number" class="w-full mb-3 border p-2 rounded" required maxlength="10" pattern="^[0-9]{10}$" title="Please enter exactly 10 digits without spaces or characters" />
+      <div id="phoneError" class="text-red-500 text-sm hidden">Phone number must be exactly 10 digits.</div>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Continue</button>
+    </form>
+  </section>
+
+  <!-- Dashboard Page -->
+  <section id="dashboard" class="hidden">
+    <header class="bg-blue-600 text-white text-center py-4">
+      <h1 class="text-2xl font-bold">My Finances</h1>
+    </header>
+    <main class="p-4 max-w-3xl mx-auto">
+      <section class="bg-white rounded shadow p-4 mb-4">
+        <h2 class="text-xl font-semibold text-blue-600 mb-2">Overview</h2>
+        <div class="text-lg font-semibold text-indigo-800">Current Balance: <span id="currentBalance">₹0.00</span></div>
+        <div class="flex justify-between text-gray-700 mt-2">
+          <div>Income: <span id="totalIncome">₹0.00</span></div>
+          <div>Expenses: <span id="totalExpenses">₹0.00</span></div>
+        </div>
+      </section>
+
+      <section class="bg-white rounded shadow p-4 mb-4">
+        <h2 class="text-xl font-semibold text-blue-600 mb-2">Add Transaction</h2>
+        <form id="transactionForm">
+          <select id="type" class="w-full border p-2 mb-2 rounded">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <input type="text" id="description" placeholder="Description" class="w-full border p-2 mb-2 rounded" required />
+          <input type="number" id="amount" placeholder="Amount (₹)" step="0.01" class="w-full border p-2 mb-2 rounded" required />
+          <input type="text" id="category" placeholder="Category" class="w-full border p-2 mb-2 rounded" />
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Add Transaction</button>
+        </form>
+      </section>
+
+      <section class="bg-white rounded shadow p-4 mb-4">
+        <h2 class="text-xl font-semibold text-blue-600 mb-2">Transactions</h2>
+        <ul id="transactions" class="list-disc pl-5"></ul>
+      </section>
+
+      <section class="bg-white rounded shadow p-4">
+        <h2 class="text-xl font-semibold text-blue-600 mb-2">Financial Advisor Chatbot</h2>
+        <div id="chatbox" class="border p-4 h-64 overflow-y-auto bg-gray-50 mb-2 rounded"></div>
+        <form id="chatForm" class="flex gap-2">
+          <input type="text" id="chatInput" class="flex-1 p-2 border rounded" placeholder="Ask me about finances..." required />
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Send</button>
+        </form>
+      </section>
+    </main>
+    <footer class="bg-gray-700 text-white text-center p-4 mt-4">
+      &copy; 2025 My Financial System
+    </footer>
+  </section>
+
+  <!-- Scripts -->
+  <script>
+    function showPersonalInfo() {
+      document.getElementById("landingPage").style.display = "none";
+      document.getElementById("personalInfo").style.display = "block";
+    }
+
+    function showDashboard(event) {
+      event.preventDefault();
+      const phone = document.getElementById("phone").value;
+      if (!/^[0-9]{10}$/.test(phone)) {
+        document.getElementById("phoneError").classList.remove("hidden");
+        return;
+      }
+      document.getElementById("phoneError").classList.add("hidden");
+      document.getElementById("personalInfo").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
+    }
+
+    // Dashboard Logic
+    let totalIncome = 0, totalExpenses = 0;
+
+    document.getElementById("transactionForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const type = document.getElementById("type").value;
+      const description = document.getElementById("description").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+      const category = document.getElementById("category").value;
+
+      if (isNaN(amount) || amount <= 0) return;
+
+      const li = document.createElement("li");
+      li.textContent = `${type.toUpperCase()}: ₹${amount.toFixed(2)} - ${description} (${category})`;
+      document.getElementById("transactions").appendChild(li);
+
+      if (type === "income") totalIncome += amount;
+      else totalExpenses += amount;
+
+      document.getElementById("totalIncome").textContent = `₹${totalIncome.toFixed(2)}`;
+      document.getElementById("totalExpenses").textContent = `₹${totalExpenses.toFixed(2)}`;
+      document.getElementById("currentBalance").textContent = `₹${(totalIncome - totalExpenses).toFixed(2)}`;
+
+      e.target.reset();
+    });
+
+    // Chatbot Logic
+    const advice = {
+      budget: [
+        "Create a monthly budget to track your income and expenses.",
+        "Use apps to automate budgeting.",
+        "Set spending limits for each category.",
+        "Review your budget weekly to adjust if needed."
+      ],
+      savings: [
+        "Save at least 20% of your income.",
+        "Automate your savings every month.",
+        "Create an emergency fund of 3-6 months' expenses.",
+        "Open a high-yield savings account for better interest."
+      ],
+      debt: [
+        "Focus on paying off high-interest debt first.",
+        "Consider the snowball method for motivation.",
+        "Avoid taking on unnecessary debt.",
+        "Negotiate better interest rates when possible."
+      ],
+      invest: [
+        "Start investing early to benefit from compounding.",
+        "Diversify your investments (stocks, bonds, mutual funds).",
+        "Educate yourself before investing.",
+        "Invest regularly, even in small amounts."
+      ]
+    };
+
+    function displayMessage(message, sender) {
+      const div = document.createElement("div");
+      div.className = sender === "user" ? "text-right text-blue-600 my-1" : "text-left text-green-700 my-1";
+      div.textContent = message;
+      document.getElementById("chatbox").appendChild(div);
+      document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
+    }
+
+    document.getElementById("chatForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const userInput = document.getElementById("chatInput").value.trim().toLowerCase();
+      if (!userInput) return;
+      displayMessage(userInput, "user");
+
+      let found = false;
+      for (let topic in advice) {
+        if (userInput.includes(topic)) {
+          found = true;
+          advice[topic].forEach(msg => {
+            setTimeout(() => displayMessage(msg, "bot"), 400);
+          });
+          break;
+        }
+      }
+
+      if (!found) {
+        setTimeout(() => displayMessage("I'm sorry, try asking about budgeting, savings, debt, or investing.", "bot"), 500);
+      }
+
+      document.getElementById("chatInput").value = "";
+    });
+  </script>
+</body>
 </html>
